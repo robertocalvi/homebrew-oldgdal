@@ -42,4 +42,3 @@ class Gdal < Formula
   end
 end
 
-
