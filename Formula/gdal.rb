@@ -8,18 +8,21 @@ class Gdal < Formula
   head "https://github.com/OSGeo/gdal.git", branch: "master"
 
   depends_on "pkg-config" => :build
-  depends_on "proj"
+  depends_on "robertocalvi/oldproj/proj"
   depends_on "sqlite"
+  depends_on "python@3.11"
 
   uses_from_macos "expat"
   uses_from_macos "libxml2"
 
   def install
+    python_executable = Formula["python@3.11"].opt_bin/"python3"
+
     args = std_cmake_args + %W[
       -DCMAKE_INSTALL_RPATH=#{rpath}
       -DENABLE_PAM=ON
       -DBUILD_PYTHON_BINDINGS=ON
-      -DPython_EXECUTABLE=#{which "python3"}
+      -DPython_EXECUTABLE=#{python_executable}
     ]
 
     mkdir "build" do
@@ -29,13 +32,14 @@ class Gdal < Formula
 
     # Install Python bindings
     cd "swig/python" do
-      system "python3", *Language::Python.setup_install_args(prefix, "python3")
+      system python_executable, *Language::Python.setup_install_args(prefix, python_executable)
     end
   end
 
   test do
     system "#{bin}/gdalinfo", "--formats"
-    system "python3", "-c", "import osgeo.gdal"
+    system Formula["python@3.11"].opt_bin/"python3", "-c", "import osgeo.gdal"
   end
 end
+
 
